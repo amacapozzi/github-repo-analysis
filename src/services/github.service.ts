@@ -22,7 +22,7 @@ export class GithubService {
         }
       );
 
-      if (!response.ok || response.url.endsWith("/releases")) {
+      if (!response.ok || !response.url.endsWith("/releases")) {
         //console.error(await response.text());
         console.error(
           "Failed to fetch latest release res:" +
