@@ -24,7 +24,7 @@ export class AnalysisService {
         maxBodyLength: Infinity,
       });
 
-      const info = await this.getFileInfo(response.data.data.self);
+      const info = await this.getFileInfo(response.data.data.links.self);
 
       return info.data.attributes.stats;
     } catch (err: any) {
@@ -33,7 +33,7 @@ export class AnalysisService {
   }
 
   private static async getFileInfo(fileId: string) {
-    const response = await axios.get(`${BASE_URL}/v3/files/${fileId}`, {
+    const response = await axios.get(`${fileId}`, {
       headers: {
         "x-apikey": appConfig.VIRUS_TOTAL_APIKEY,
       },
