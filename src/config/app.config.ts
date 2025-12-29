@@ -1,6 +1,7 @@
 import "dotenv/config";
 
 export const appConfig = {
-  VIRUS_TOTAL_APIKEY: process.env.VIRUS_TOTAL_API_KEY ?? "",
-  GITHUB_SECRET: process.env.GITHUB_SECRET ?? "",
+  VIRUS_TOTAL_APIKEY: process.env.VIRUS_TOTAL_API_KEY!,
+  GITHUB_SECRET: process.env.GITHUB_SECRET!,
+  GROQ_API_KEY: process.env.GROQ_API_KEY!,
 };

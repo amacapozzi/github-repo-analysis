@@ -1,10 +1,9 @@
 import axios from "axios";
 import FormData from "form-data";
 import yauzl from "yauzl";
-import { appConfig } from "../config/app.config";
-import { FileResult } from "../types/File";
-
-const BASE_URL = "https://www.virustotal.com/api";
+import { appConfig } from "@app/config/app.config";
+import { FileResult } from "@app/types/File";
+import { VIRUS_TOTAL_BASE_URL } from "@app/constants/api";
 
 export class AnalysisService {
   public static async checkFile(buffer: Buffer): Promise<FileResult | Error> {
@@ -15,14 +14,18 @@ export class AnalysisService {
         contentType: "application/octet-stream",
       });
 
-      const response = await axios.post(`${BASE_URL}/v3/files`, formData, {
-        headers: {
-          "x-apikey": appConfig.VIRUS_TOTAL_APIKEY,
-          ...formData.getHeaders(),
-        },
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity,
-      });
+      const response = await axios.post(
+        `${VIRUS_TOTAL_BASE_URL}/v3/files`,
+        formData,
+        {
+          headers: {
+            "x-apikey": appConfig.VIRUS_TOTAL_APIKEY,
+            ...formData.getHeaders(),
+          },
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity,
+        }
+      );
 
       const info = await this.getFileInfo(response.data.data.links.self);
 
@@ -46,5 +49,9 @@ export class AnalysisService {
       if (err) return true;
       return false;
     });
+  }
+
+  public static async checkCode() {
+    
   }
 }
