@@ -9,7 +9,7 @@ export const getBufferFromUrl = async (url: string): Promise<Buffer> => {
           body.push(chunk);
         })
         .on("end", () => {
-          resolve(Buffer.concat(body));
+          resolve(Buffer.concat(body as Uint8Array[]));
         });
     });
   });
