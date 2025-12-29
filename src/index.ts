@@ -1,28 +1,51 @@
+import { AiAnalysisService } from "./services/ai.service";
 import { AnalysisService } from "./services/analysis.service";
 import { GithubService } from "./services/github.service";
-import { getBufferFromUrl } from "./utils/buffer";
+import type { RepoRef } from "./types/Github";
 
-const username = "select_name"; //enter github user
+const username = "<username>";
+const repo = "<repo>";
+const ref = "<ref>"; //example main;
 
 const main = async () => {
-  await (
-    await GithubService.getUserRepos(username)
-  ).forEach(async (repo) => {
-    const assets = await GithubService.getRepoLatestReleaseAttachments(
-      username,
-      repo.name
-    );
+  const repoRef: RepoRef = { owner: username, repo, ref };
 
-    assets
-      .filter((asset) => asset.endsWith(".exe"))
-      .forEach(async (asset) => {
-        const buffer = await getBufferFromUrl(asset);
-
-        const resp = await AnalysisService.checkFile(buffer);
-
-        console.log(resp);
-      });
+  const scan = await GithubService.scanRepoForAI(repoRef, {
+    scanAll: true,
+    includeDotFiles: true,
+    maxFiles: 20000,
+    maxBytesPerFile: 10_000_000,
+    hardStopOnRateLimit: true,
   });
+
+  console.log("\n=== SCAN RESULT ===");
+  console.log({
+    refResolved: scan.refResolved,
+    totalCandidates: scan.totalCandidates,
+    fetched: scan.files.length,
+    skipped: scan.skipped.length,
+    manifest: scan.manifest,
+    localOverview: scan.localOverview,
+  });
+
+  if (scan.skipped.length) {
+    console.log("\n=== SKIPPED (first 30) ===");
+    console.dir(scan.skipped.slice(0, 30), { depth: null });
+  }
+
+  const analysis = await AiAnalysisService.analyzeRepo(scan, {
+    owner: username,
+    name: repo,
+  });
+
+  console.log("\n=== HUMAN SUMMARY ===\n");
+  console.log(analysis);
+
+  console.log("\n=== ANALYSIS JSON ===\n");
+  console.dir(analysis.rawJson, { depth: null });
 };
 
-main();
+main().catch((err) => {
+  console.error("Fatal error:", err);
+  process.exitCode = 1;
+});
